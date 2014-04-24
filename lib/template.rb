@@ -51,8 +51,14 @@ inside plugin_path do
   run "mv #{original_gemfile_name} #{new_gemfile_name}"
 
   # Remove README.rdoc
+  run "rm README.rdoc"
 
   # Add README.md
+  create_file "README.md" do
+    app_name = "# #{name.camelize}\n"
+    app_desc = "This project rocks and uses APACHE-LICENSE.\n"
+    "#{app_name}\n#{app_desc}"
+  end
 
   # Add `s.license = "APACHE"` to gemspec
 
