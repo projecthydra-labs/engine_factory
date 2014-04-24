@@ -20,6 +20,12 @@ Or install it yourself as:
 
 TODO: Write usage instructions here
 
+## Hacking on This
+
+To rapidly iterate on this as it is in alpha, you may find this command helpful.
+
+`rm -rf hydra_scratch_project; NAMESPACE=hydra rails plugin new hydra_scratch_project --mountable -T --dummy-path=spec/internal -m engine_factory/lib/template.rb`
+
 ## Contributing
 
 1. Fork it ( http://github.com/<my-github-username>/engine_factory/fork )
