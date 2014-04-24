@@ -45,6 +45,9 @@ inside plugin_path do
 	end
 
   # Rename gemspec
+  original_gemfile_name = "#{name}.gemspec"
+  new_gemfile_name = original_gemfile_name.sub(/#{namespace}_/, "#{namespace}-")
+  run "mv #{original_gemfile_name} #{new_gemfile_name}"
 
   # Remove README.rdoc
 
