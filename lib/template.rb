@@ -62,6 +62,16 @@ inside plugin_path do
   # Add `s.license = "APACHE"` to gemspec
 
   # Add bundler style s.files and s.bin
+  gsub_file new_gemfile_name, / +s\.files.*$/ do <<-RUBY
+  s.license = 'APACHE2'
+
+  s.files         = `git ls-files -z`.split("\x0")
+  s.executables   = s.files.grep(%r{^bin/}) { |f| File.basename(f) }
+  s.test_files    = s.files.grep(%r{^(test|spec|features)/})
+  s.require_paths = ['lib']
+  RUBY
+  end
+
 
   # Move lib/namspaced_plugin.rb to lib/namspaced-plugin.rb
 
