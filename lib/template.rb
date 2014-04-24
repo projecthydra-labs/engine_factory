@@ -1,6 +1,5 @@
 # http://guides.rubyonrails.org/rails_application_templates.html
 require 'rake'
-require 'byebug'
 namespace = ENV['NAMESPACE']
 
 def original_wd
