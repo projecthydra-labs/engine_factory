@@ -95,12 +95,6 @@ inside plugin_path do
     end
   end
 
-  # Create lib/namespaced_plugin.rb
-  # with `require "namespaced-plugin.rb"`
-  create_file "lib/#{namespace}_#{name}.rb" do
-   "require '#{namespace}-#{name}'" 
-  end
-
   # For all files (Rake::FileList will be helpful) replace:
   # `module NamespacedPlugin` with `module Namespaced\n  module Plugin`
   # and add the corresponding closing `end` at EOF
