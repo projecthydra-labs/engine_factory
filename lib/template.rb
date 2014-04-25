@@ -74,16 +74,23 @@ inside plugin_path do
 
 
   # Move lib/namspaced_plugin.rb to lib/namspaced-plugin.rb
-
-  plugin = name.gsub!(/#{namespace}_/, "")
+  plugin = name.gsub(/#{namespace}_/, "")
   original_name = "#{namespace}_#{plugin}"
   new_name = "#{namespace}-#{plugin}"
   run "mv lib/#{original_name}.rb lib/#{new_name}.rb"
-  create_file "lib/#{original_name}.rb", "require '#{new_name}'"
+  create_file "lib/#{original_name}.rb", "require '#{new_name}'\n"
 
   # For all files (Rake::FileList will be helpful) replace the text:
   # `namespaced_plugin` with `namespaced-plugin`
   # https://github.com/jeremyf/orcid/blob/master/script/fast_specs
+  new_require_name = name.sub("#{namespace}_", "#{namespace}/")
+  Rake::FileList.new("**/*.*").each do |filename|
+    content = File.read(filename)
+    new_content = content.gsub(/require ['"](#{name})([^('")]*)['"]/, 'require \'' << new_require_name << '\2\'')
+    if new_content != content
+      File.open(filename, 'w+') {|f| f.puts new_content }
+    end
+  end
 
   # Create lib/namespaced_plugin.rb
   # with `require "namespaced-plugin.rb"`
