@@ -19,6 +19,9 @@ inside plugin_path do
     run "mv #{dirname} #{target_dirname}"
   end
 
+  # Initialize git repo
+  run "git init"
+
   # Remove MIT-LICENSE file
   remove_file 'MIT-LICENSE'
 
@@ -121,4 +124,7 @@ inside plugin_path do
   Rake::FileList.new("**/*.*").each do |filename|
     gsub_file filename, "#{class_name}", "#{namespace_module}::#{submodule}"
   end
+
+  # Commit template changes to git
+  run "git add .; git commit -m 'Run plugin generator and apply EngineFactory template'"
 end
