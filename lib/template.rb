@@ -103,9 +103,22 @@ inside plugin_path do
   # and add the corresponding closing `end` at EOF
   # Hints from:
   # https://github.com/jeremyf/orcid/blob/master/script/fast_specs
+  class_name = name.classify
+  namespace_module = namespace.classify
+  submodule = class_name.sub(/^#{namespace_module}/, '')
+  Rake::FileList.new("**/*.*").each do |filename|
+    content = File.read(filename)
+    new_content = content.gsub("module #{class_name}", "module #{namespace_module}\nmodule #{submodule}" )
+    if new_content != content
+      new_content << "\nend\n"
+      File.open(filename, 'w+') {|f| f.puts new_content }
+    end
+  end
 
   # For all files (Rake::FileList will be helpful) replace:
   # `NamespacedPlugin` with `Namespaced::Plugin`
   # https://github.com/jeremyf/orcid/blob/master/script/fast_specs
-
+  Rake::FileList.new("**/*.*").each do |filename|
+    gsub_file filename, "#{class_name}", "#{namespace_module}::#{submodule}"
+  end
 end
