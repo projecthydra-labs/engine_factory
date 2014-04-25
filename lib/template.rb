@@ -7,12 +7,12 @@ def original_wd
   raise RuntimeError.new("Doh! Rails changed an instance variable. We really need this for determining where we installed the gem.")
 end
 
-# Commit changes up to this point
-run "git init; git add .; git commit -m 'Initial commit after generator, before template'"
+
 
 plugin_path = File.join(original_wd,name)
 inside plugin_path do
-
+  # Commit changes up to this point
+  run "git init; git add --all .; git commit -m 'Initial commit after generator, before template'"
   dirnames = Rake::FileList.new("app/**/#{name}", "lib/**/#{name}")
   dirnames.each do |dirname|
     target_dirname = dirname.sub(/\/#{namespace}_/, "/#{namespace}/")
@@ -124,5 +124,5 @@ inside plugin_path do
   end
 
   # Commit template changes to git
-  run "git add .; git commit -m 'Apply EngineFactory template'"
+  run "git add --all .; git commit -m 'Apply EngineFactory template'"
 end
