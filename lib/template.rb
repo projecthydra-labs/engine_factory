@@ -11,8 +11,14 @@ end
 
 plugin_path = File.join(original_wd,name)
 inside plugin_path do
+  # prepare .gitignore
+  git_ignore = File.open('.gitignore','a+')
+  git_ignore << "Gemfile.lock\n"
+  git_ignore << "spec/internal\n"
   # Commit changes up to this point
-  run "git init; git add --all .; git commit -m 'Initial commit after generator, before template'"
+  run "git init"
+  run "git add .gitignore; git commit -m 'add .gitignore'" 
+  run "git add --all .; git commit -m 'Initial commit after generator, before template'"
   dirnames = Rake::FileList.new("app/**/#{name}", "lib/**/#{name}")
   dirnames.each do |dirname|
     target_dirname = dirname.sub(/\/#{namespace}_/, "/#{namespace}/")
@@ -116,7 +122,6 @@ inside plugin_path do
   Rake::FileList.new("**/*.*").each do |filename|
     gsub_file filename, "#{class_name}", "#{namespace_module}::#{submodule}"
   end
-
   # Commit template changes to git
   run "git add --all .; git commit -m 'Apply EngineFactory template'"
 end
