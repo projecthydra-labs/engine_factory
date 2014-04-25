@@ -8,6 +8,7 @@ def original_wd
 end
 
 # Commit changes up to this point
+run "git init; git add .; git commit -m 'Initial commit after generator, before template'"
 
 plugin_path = File.join(original_wd,name)
 inside plugin_path do
@@ -18,9 +19,6 @@ inside plugin_path do
     run "mkdir -p #{File.dirname(target_dirname)}"
     run "mv #{dirname} #{target_dirname}"
   end
-
-  # Initialize git repo
-  run "git init"
 
   # Remove MIT-LICENSE file
   remove_file 'MIT-LICENSE'
@@ -126,5 +124,5 @@ inside plugin_path do
   end
 
   # Commit template changes to git
-  run "git add .; git commit -m 'Run plugin generator and apply EngineFactory template'"
+  run "git add .; git commit -m 'Apply EngineFactory template'"
 end
