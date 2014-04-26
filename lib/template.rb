@@ -73,11 +73,12 @@ def each_filename_in_repo
   end
 end
 
-inside plugin_path do
+def prepare_project_for_git
   # prepare .gitignore
-  git_ignore = File.open('.gitignore','a+')
-  git_ignore << "Gemfile.lock\n"
-  git_ignore << "spec/internal\n"
+  append_file '.gitignore' do
+    "\nGemfile.lock\nspec/internal\n"
+  end
+
   # Commit changes up to this point
   run "git init"
   run "git add .gitignore; git commit -m 'add .gitignore'" 
@@ -256,6 +257,7 @@ end
 ################################################################################
 
 inside(plugin_path) do
+  prepare_project_for_git
   pre_namespace_changes
   namespace_related_changes if namespace
   # Commit template changes to git
