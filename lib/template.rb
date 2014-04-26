@@ -52,9 +52,9 @@ inside plugin_path do
   end
 
   # Rename gemspec
-  original_gemfile_name = "#{name}.gemspec"
-  new_gemfile_name = original_gemfile_name.sub(/#{namespace}_/, "#{namespace}-")
-  run "mv #{original_gemfile_name} #{new_gemfile_name}"
+  original_gemspec_filename = "#{name}.gemspec"
+  new_gemspec_filename = original_gemspec_filename.sub(/#{namespace}_/, "#{namespace}-")
+  run "mv #{original_gemspec_filename} #{new_gemspec_filename}"
 
   # Remove README.rdoc
   run "rm README.rdoc"
@@ -69,7 +69,7 @@ inside plugin_path do
   # Add `s.license = "APACHE"` to gemspec
 
   # Add bundler style s.files and s.bin
-  gsub_file new_gemfile_name, / +s\.files.*$/ do <<-RUBY
+  gsub_file new_gemspec_filename, / +s\.files.*$/ do <<-RUBY
   s.license = 'APACHE2'
 
   s.files         = `git ls-files -z`.split("\x0")
