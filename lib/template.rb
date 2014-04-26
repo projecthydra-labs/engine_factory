@@ -83,7 +83,6 @@ inside plugin_path do
   plugin = name.sub(/#{namespace}_/, "")
   new_name = "#{namespace}-#{plugin}"
   run "mv lib/#{name}.rb lib/#{new_name}.rb"
-  create_file "lib/#{name}.rb", "require '#{new_name}'\n"
 
   # For all files (Rake::FileList will be helpful) replace the text:
   # `namespaced_plugin` with `namespaced-plugin`
