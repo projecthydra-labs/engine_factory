@@ -7,7 +7,13 @@ def original_wd
   raise RuntimeError.new("Doh! Rails changed an instance variable. We really need this for determining where we installed the gem.")
 end
 
+def each_filename_in_repo
+  Rake::FileList.new("**/*").each do |filename|
+    yield filename unless File.directory?(filename)
+  end
+end
 
+# Commit changes up to this point
 
 plugin_path = File.join(original_wd,name)
 inside plugin_path do
@@ -78,22 +84,33 @@ inside plugin_path do
   RUBY
   end
 
-
   # Move lib/namspaced_plugin.rb to lib/namspaced-plugin.rb
   plugin = name.sub(/#{namespace}_/, "")
   new_name = "#{namespace}-#{plugin}"
   run "mv lib/#{name}.rb lib/#{new_name}.rb"
 
+  # Rename gem name to namespaced version
+  # NOTE: gemspec filenmae must match internally declared spec.name
+  gsub_file new_gemspec_filename, /name *= *['"]#{name}['"]/ do
+    "name = '#{new_name}'"
+  end
+
   # For all files (Rake::FileList will be helpful) replace the text:
-  # `namespaced_plugin` with `namespaced-plugin`
+  # require `namespaced_plugin` with require `namespaced-plugin`
   # https://github.com/jeremyf/orcid/blob/master/script/fast_specs
   new_require_name = name.sub("#{namespace}_", "#{namespace}/")
-  Rake::FileList.new("**/*.*").each do |filename|
+  each_filename_in_repo do |filename|
     content = File.read(filename)
     new_content = content.gsub(/require ['"](#{name})([^('")]*)['"]/, 'require \'' << new_require_name << '\2\'')
     if new_content != content
       File.open(filename, 'w+') {|f| f.puts new_content }
     end
+  end
+
+  # Create lib/namespaced_plugin.rb
+  # with `require "namespaced-plugin.rb"`
+  create_file "lib/#{name}.rb" do
+   "require '#{new_name}'"
   end
 
   # For all files (Rake::FileList will be helpful) replace:
@@ -104,21 +121,24 @@ inside plugin_path do
   class_name = name.classify
   namespace_module = namespace.classify
   submodule = class_name.sub(/^#{namespace_module}/, '')
-  Rake::FileList.new("**/*.*").each do |filename|
+  each_filename_in_repo do |filename|
     content = File.read(filename)
     new_content = content.gsub("module #{class_name}", "module #{namespace_module}\nmodule #{submodule}" )
-    if new_content != content
+    if content != new_content
       new_content << "\nend\n"
-      File.open(filename, 'w+') {|f| f.puts new_content }
+      File.open(filename, 'w+') { |f| f.puts new_content }
     end
   end
 
   # For all files (Rake::FileList will be helpful) replace:
   # `NamespacedPlugin` with `Namespaced::Plugin`
   # https://github.com/jeremyf/orcid/blob/master/script/fast_specs
-  Rake::FileList.new("**/*.*").each do |filename|
+  each_filename_in_repo do |filename|
     gsub_file filename, "#{class_name}", "#{namespace_module}::#{submodule}"
+    gsub_file filename, "#{name}.gemspec", "#{new_name}.gemspec"
+    gsub_file filename, "#{name}", "#{new_require_name}"
   end
+
   # Commit template changes to git
   run "git add --all .; git commit -m 'Apply EngineFactory template'"
 end
