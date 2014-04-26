@@ -14,11 +14,12 @@
 ###   * Replace the README.rdoc with README.md
 ###   * Apply bundler's gemspec syntax for :files, :test_files, and :executables
 ###   * For a Rails plugin engine, some opinionated defaults are applied.
+###   * Add rspec as a development dependency
 ###
 ### If you run the template with a NAMESPACE environment variable set then this
 ###   template will also do its best to allow for a namespaced gem.
 ###
-###   Example: If you specify the namespace as "hydra" and the plugin is
+###   Example: If you specify the NAMESPACE as "hydra" and the plugin is
 ###     "hydra_my_plugin" then this template will create a Hydra::MyPlugin gem
 ###     instead of the usual HydraMyPlugin.
 ###
@@ -124,6 +125,8 @@ def pre_namespace_changes
   s.executables   = s.files.grep(%r{^bin/}) { |f| File.basename(f) }
   s.test_files    = s.files.grep(%r{^(test|spec|features)/})
   s.require_paths = ['lib']
+
+  s.add_development_dependency = 'rspec'
   RUBY
   end
 
