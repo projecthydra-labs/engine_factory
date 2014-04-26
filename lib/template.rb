@@ -127,7 +127,7 @@ def pre_namespace_changes
   s.test_files    = s.files.grep(%r{^(test|spec|features)/})
   s.require_paths = ['lib']
 
-  s.add_development_dependency = 'rspec'
+  s.add_development_dependency 'rspec'
   RUBY
   end
 
@@ -194,9 +194,9 @@ def namespace_related_changes
   run "mv lib/#{name}.rb lib/#{new_name}.rb"
 
   # Rename gem name to namespaced version
-  # NOTE: gemspec filenmae must match internally declared spec.name
-  gsub_file new_gemspec_filename, /name *= *['"]#{name}['"]/ do
-    "name = '#{new_name}'"
+  # NOTE: gemspec filename must match internally declared spec.name
+  gsub_file new_gemspec_filename, /\.name *= *['"]#{name}['"]/ do
+    ".name = '#{new_name}'"
   end
 
   # For all files (Rake::FileList will be helpful) replace the text:
