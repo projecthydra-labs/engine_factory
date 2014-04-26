@@ -13,6 +13,7 @@
 ###   * Remove the MIT-LICENSE and replace with APACHE2
 ###   * Replace the README.rdoc with README.md
 ###   * Apply bundler's gemspec syntax for :files, :test_files, and :executables
+###   * For a Rails plugin engine, some opinionated defaults are applied.
 ###
 ### If you run the template with a NAMESPACE environment variable set then this
 ###   template will also do its best to allow for a namespaced gem.
@@ -65,7 +66,9 @@ end
 
 def each_filename_in_repo
   Rake::FileList.new("**/*").each do |filename|
-    yield filename unless File.directory?(filename)
+    next if File.directory?(filename)
+    next if filename =~ /engine\.rb\Z/
+    yield filename
   end
 end
 
@@ -123,6 +126,48 @@ def pre_namespace_changes
   s.require_paths = ['lib']
   RUBY
   end
+
+  # Rework the engine declaration.
+  engine_filename = File.join("lib", name, "engine.rb")
+  if File.exist?(engine_filename)
+    create_file(engine_filename, force: true) do
+      lines = []
+      modules = new_project_class_name.split("::")
+      lines += modules.collect {|m| "module #{m}"}
+      lines << ""
+      lines << "  module_function"
+      lines << ""
+      lines << "  # As per an isolated_namespace Rails engine."
+      lines << "  # But the isolated namespace creates issues."
+      lines << "  def table_name_prefix"
+      lines << "    '#{name}'"
+      lines << "  end"
+      lines << ""
+      lines << "  # Because we are not using isolate_namespace for #{new_project_class_name}"
+      lines << "  # We need this for the application router to find the appropriate routes."
+      lines << "  def use_relative_model_naming?"
+      lines << "    true"
+      lines << "  end"
+      lines << ""
+      lines << "  class Engine < ::Rails::Engine"
+      lines << "    engine_name '#{name}'"
+      lines << ""
+      lines << "    # You may find it helpful to declare initializers"
+      lines << "    # initializer '#{name}.initializers' do |app|"
+      lines << "    #  app.config.paths.add 'app/services', eager_load: true"
+      lines << "    #  app.config.autoload_paths += %W("
+      lines << '    #    #{config.root}/app/services'
+      lines << "    #  )"
+      lines << "    # end"
+      lines << ""
+      lines << "  end"
+      lines << ""
+      lines += modules.collect{|m| "end" }
+      lines << ""
+      lines.join("\n")
+    end
+  end
+
 end
 
 def namespace_related_changes
@@ -194,6 +239,7 @@ def namespace_related_changes
     gsub_file filename, "#{name}.gemspec", "#{new_name}.gemspec"
     gsub_file filename, "#{name}", "#{new_require_name}"
   end
+
 end
 
 ################################################################################
