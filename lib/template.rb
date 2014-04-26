@@ -67,7 +67,6 @@ inside plugin_path do
   end
 
   # Add `s.license = "APACHE"` to gemspec
-
   # Add bundler style s.files and s.bin
   gsub_file new_gemspec_filename, / +s\.files.*$/ do <<-RUBY
   s.license = 'APACHE2'
@@ -81,11 +80,10 @@ inside plugin_path do
 
 
   # Move lib/namspaced_plugin.rb to lib/namspaced-plugin.rb
-  plugin = name.gsub(/#{namespace}_/, "")
-  original_name = "#{namespace}_#{plugin}"
+  plugin = name.sub(/#{namespace}_/, "")
   new_name = "#{namespace}-#{plugin}"
-  run "mv lib/#{original_name}.rb lib/#{new_name}.rb"
-  create_file "lib/#{original_name}.rb", "require '#{new_name}'\n"
+  run "mv lib/#{name}.rb lib/#{new_name}.rb"
+  create_file "lib/#{name}.rb", "require '#{new_name}'\n"
 
   # For all files (Rake::FileList will be helpful) replace the text:
   # `namespaced_plugin` with `namespaced-plugin`
