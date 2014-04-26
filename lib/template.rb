@@ -1,10 +1,66 @@
-# http://guides.rubyonrails.org/rails_application_templates.html
+################################################################################
+################################################################################
+###
+### TL;DR
+###
+### $ NAMESPACE="name_of_my" rails plugin new name_of_my_plugin /
+###   -m path/to/engine_factory/lib/template.rb
+###
+### Explanation:
+###
+### This Rails plugin template applies some of the new gem conventions for
+###   ProjectHydra, though may be useful for others as well:
+###   * Remove the MIT-LICENSE and replace with APACHE2
+###   * Replace the README.rdoc with README.md
+###   * Apply bundler's gemspec syntax for :files, :test_files, and :executables
+###
+### If you run the template with a NAMESPACE environment variable set then this
+###   template will also do its best to allow for a namespaced gem.
+###
+###   Example: If you specify the namespace as "hydra" and the plugin is
+###     "hydra_my_plugin" then this template will create a Hydra::MyPlugin gem
+###     instead of the usual HydraMyPlugin.
+###
+### More on Rails Application Templates
+### http://guides.rubyonrails.org/rails_application_templates.html
+###
 require 'rake'
-namespace = ENV['NAMESPACE']
+
+################################################################################
+################################################################################
+###
+### BEGIN FUNCTION DEFINITIONS
+###
+### These functions will be called at the bottom of the file. You should scroll
+### to the bottom of this file and see what is happening.
+###
+################################################################################
+################################################################################
+
+def namespace
+  ENV['NAMESPACE']
+end
+
+def new_project_directory
+  @new_project_directory ||= begin
+    if namespace
+      name.sub(/^#{ENV["NAMESPACE"]}_/, "#{ENV['NAMESPACE']}/")
+    else
+      name
+    end
+  end
+end
+def new_project_class_name
+  @new_project_class_name ||= new_project_directory.classify
+end
 
 def original_wd
   return @original_wd if @original_wd
   raise RuntimeError.new("Doh! Rails changed an instance variable. We really need this for determining where we installed the gem.")
+end
+
+def plugin_path
+  File.join(original_wd,name)
 end
 
 def each_filename_in_repo
@@ -13,9 +69,6 @@ def each_filename_in_repo
   end
 end
 
-# Commit changes up to this point
-
-plugin_path = File.join(original_wd,name)
 inside plugin_path do
   # prepare .gitignore
   git_ignore = File.open('.gitignore','a+')
@@ -25,17 +78,11 @@ inside plugin_path do
   run "git init"
   run "git add .gitignore; git commit -m 'add .gitignore'" 
   run "git add --all .; git commit -m 'Initial commit after generator, before template'"
-  dirnames = Rake::FileList.new("app/**/#{name}", "lib/**/#{name}")
-  dirnames.each do |dirname|
-    target_dirname = dirname.sub(/\/#{namespace}_/, "/#{namespace}/")
-    run "mkdir -p #{File.dirname(target_dirname)}"
-    run "mv #{dirname} #{target_dirname}"
-  end
+end
 
-  # Remove MIT-LICENSE file
+def pre_namespace_changes
   remove_file 'MIT-LICENSE'
 
-  # Add LICENSE file for Apache2
   create_file "LICENSE" do
     copyright_statement = ask("What copyright statement should be included in the license? (e.g., Copyright 2014 University of Example)")
     <<-EOF
@@ -57,24 +104,17 @@ inside plugin_path do
     EOF
   end
 
-  # Rename gemspec
-  original_gemspec_filename = "#{name}.gemspec"
-  new_gemspec_filename = original_gemspec_filename.sub(/#{namespace}_/, "#{namespace}-")
-  run "mv #{original_gemspec_filename} #{new_gemspec_filename}"
+  remove_file "README.rdoc"
 
-  # Remove README.rdoc
-  run "rm README.rdoc"
-
-  # Add README.md
   create_file "README.md" do
-    app_name = "# #{name.camelize}\n"
+    app_name = "# #{new_project_class_name}\n"
     app_desc = "This project rocks and uses APACHE-LICENSE.\n"
     "#{app_name}\n#{app_desc}"
   end
 
   # Add `s.license = "APACHE"` to gemspec
   # Add bundler style s.files and s.bin
-  gsub_file new_gemspec_filename, / +s\.files.*$/ do <<-RUBY
+  gsub_file "#{name}.gemspec", / +s\.files.*$/ do <<-RUBY
   s.license = 'APACHE2'
 
   s.files         = `git ls-files -z`.split(\"\\x0\")
@@ -83,6 +123,21 @@ inside plugin_path do
   s.require_paths = ['lib']
   RUBY
   end
+end
+
+def namespace_related_changes
+  return true unless ENV['NAMESPACE']
+  dirnames = Rake::FileList.new("app/**/#{name}", "lib/**/#{name}")
+  dirnames.each do |dirname|
+    target_dirname = dirname.sub(/\/#{namespace}_/, "/#{namespace}/")
+    run "mkdir -p #{File.dirname(target_dirname)}"
+    run "mv #{dirname} #{target_dirname}"
+  end
+
+  # Rename gemspec
+  original_gemspec_filename = "#{name}.gemspec"
+  new_gemspec_filename = original_gemspec_filename.sub(/#{namespace}_/, "#{namespace}-")
+  run "mv #{original_gemspec_filename} #{new_gemspec_filename}"
 
   # Move lib/namspaced_plugin.rb to lib/namspaced-plugin.rb
   plugin = name.sub(/#{namespace}_/, "")
@@ -110,7 +165,8 @@ inside plugin_path do
   # Create lib/namespaced_plugin.rb
   # with `require "namespaced-plugin.rb"`
   create_file "lib/#{name}.rb" do
-   "require '#{new_name}'"
+   "# A convenience/courtesy file for adopters of this gem.\n" <<
+   "require '#{new_name}'\n"
   end
 
   # For all files (Rake::FileList will be helpful) replace:
@@ -138,7 +194,21 @@ inside plugin_path do
     gsub_file filename, "#{name}.gemspec", "#{new_name}.gemspec"
     gsub_file filename, "#{name}", "#{new_require_name}"
   end
+end
 
+################################################################################
+################################################################################
+###
+### BEGIN THE PART THAT DOES THINGS
+###
+### Below this line, the things happen.
+###
+################################################################################
+################################################################################
+
+inside(plugin_path) do
+  pre_namespace_changes
+  namespace_related_changes if namespace
   # Commit template changes to git
   run "git add --all .; git commit -m 'Apply EngineFactory template'"
 end
