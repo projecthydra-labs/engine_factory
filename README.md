@@ -1,35 +1,24 @@
 # EngineFactory
 
-TODO: Write a gem description
+```console
+$ NAMESPACE="name_of_my" rails plugin new name_of_my_plugin -m https://raw.githubusercontent.com/projecthydra-labs/engine_factory/master/lib/template.rb
+```
 
-## Installation
+Explanation:
 
-Add this line to your application's Gemfile:
+This Rails plugin template applies some of the new gem conventions for
+  ProjectHydra, though may be useful for others as well:
+  * Remove the MIT-LICENSE and replace with APACHE2
+  * Replace the README.rdoc with README.md
+  * Apply bundler's gemspec syntax for :files, :test_files, and :executables
+  * For a Rails plugin engine, some opinionated defaults are applied.
+  * Add rspec as a development dependency
 
-    gem 'engine_factory'
+If you run the template with a NAMESPACE environment variable set then this
+  template will also do its best to allow for a namespaced gem.
 
-And then execute:
+  Example: If you specify the NAMESPACE as "hydra" and the plugin is
+    "hydra_my_plugin" then this template will create a Hydra::MyPlugin gem
+    instead of the usual HydraMyPlugin.
 
-    $ bundle
-
-Or install it yourself as:
-
-    $ gem install engine_factory
-
-## Usage
-
-TODO: Write usage instructions here
-
-## Hacking on This
-
-To rapidly iterate on this as it is in alpha, you may find this command helpful.
-
-`rm -rf hydra_scratch_project; NAMESPACE=hydra rails plugin new hydra_scratch_project --mountable -T --dummy-path=spec/internal -m engine_factory/lib/template.rb`
-
-## Contributing
-
-1. Fork it ( http://github.com/<my-github-username>/engine_factory/fork )
-2. Create your feature branch (`git checkout -b my-new-feature`)
-3. Commit your changes (`git commit -am 'Add some feature'`)
-4. Push to the branch (`git push origin my-new-feature`)
-5. Create new Pull Request
+[More on Rails Application Templates](http://guides.rubyonrails.org/rails_application_templates.html)
