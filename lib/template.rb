@@ -4,7 +4,7 @@
 ### TL;DR
 ###
 ### $ NAMESPACE="name_of_my" rails plugin new name_of_my_plugin /
-###   -m path/to/engine_factory/lib/template.rb
+###   -m https://raw.githubusercontent.com/projecthydra-labs/engine_factory/master/lib/template.rb
 ###
 ### Explanation:
 ###
