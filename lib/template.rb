@@ -53,7 +53,7 @@ def new_project_directory
   end
 end
 def new_project_class_name
-  @new_project_class_name ||= new_project_directory.classify
+  @new_project_class_name ||= new_project_directory.camelize
 end
 
 def original_wd
@@ -225,8 +225,8 @@ def namespace_related_changes
   # and add the corresponding closing `end` at EOF
   # Hints from:
   # https://github.com/jeremyf/orcid/blob/master/script/fast_specs
-  class_name = name.classify
-  namespace_module = namespace.classify
+  class_name = name.camelize
+  namespace_module = namespace.camelize
   submodule = class_name.sub(/^#{namespace_module}/, '')
   each_filename_in_repo do |filename|
     content = File.read(filename)
